@@ -1,7 +1,7 @@
 
 import mysql.connector
 
-# let's make this an object
+
 class DatabaseConnection:
     # the object will need to know the host, user, password, database, and table
     def __init__(self, host, user, password, database):
@@ -21,6 +21,8 @@ class DatabaseConnection:
             )
             if self.connection.is_connected():
                 print(f"Connected to MySQL database: {self.database}")
+                return self.connection
+
         except mysql.connector.Error as e:
             print(f"Error: {e}")
 
@@ -32,6 +34,7 @@ class DatabaseConnection:
             return rows
         except mysql.connector.Error as e:
             print(f"Error: {e}")
+            return None
 
     def close(self):
         if 'cursor' in locals():
@@ -39,6 +42,7 @@ class DatabaseConnection:
         if 'connection' in locals() and self.connection.is_connected():
             self.connection.close()
             print("MySQL connection closed")
+        
 
 ##### test the class
 # if __name__ == "__main__":
