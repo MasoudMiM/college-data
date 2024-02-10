@@ -1,1 +1,1 @@
-# college-data
+# college_data
