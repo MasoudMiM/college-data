@@ -1,6 +1,5 @@
-
 import mysql.connector
-
+import pandas as pd
 
 class DatabaseConnection:
     # the object will need to know the host, user, password, database, and table
@@ -42,15 +41,13 @@ class DatabaseConnection:
         if 'connection' in locals() and self.connection.is_connected():
             self.connection.close()
             print("MySQL connection closed")
-        
+    
+    # TODO: let's add a method to get the column names and unique values in the column
+    # of a table named table_name+suffix where suffix is the 8th and 9th letter name of the database.
+    # I temporarily added an example of how this code be done metadata.py file
+    # it needs to be converted to a method in the class DatabaseConnection.
+    # However, that approach uses the excel file. But I want to use the metadata
+    # from the database itself, which are stored in the last three tables.
 
-##### test the class
-# if __name__ == "__main__":
-#     db = DatabaseConnection("localhost", "root", "password", "IPEDS200405")
-#     db.connect()
-#     table_name = 'C2004_A'
-#     rows = db.execute_query(f"SELECT * FROM {table_name} LIMIT 10;")
-#     for row in rows:
-#         print(row)
-#     db.close()
+
 

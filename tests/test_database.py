@@ -5,6 +5,7 @@ sys.path.append('/home/masoudmim/Documents/Projects/college-data')
 from ipeds_college_data.data_extraction import database
 
 #### global variables
+# TODO: replace these with your own database credentials from a config file
 HOST='localhost'
 USER='root'
 PASSWORD= 'password'
