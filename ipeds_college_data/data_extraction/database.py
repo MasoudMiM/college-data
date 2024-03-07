@@ -44,8 +44,8 @@ class DatabaseConnection:
     
     # TODO: let's add a method to get the column names and unique values in the column
     # of a table named table_name+suffix where suffix is the 8th and 9th letter name of the database.
-    # I temporarily added an example of how this code be done metadata.py file
-    # it needs to be converted to a method in the class DatabaseConnection.
+    # I temporarily added an example of how this could be done in metadata.py file.
+    # It needs to be converted to a method in the class DatabaseConnection.
     # However, that approach uses the excel file. But I want to use the metadata
     # from the database itself, which are stored in the last three tables.
 
