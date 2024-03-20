@@ -11,7 +11,7 @@ exec 2> >(tee -a "$WARNING_LOG" >/dev/null)
 
 MYSQL_USERNAME="root"
 MYSQL_PASSWORD="password"
-ACCDB_DIR="/home/masoudmim/Documents/Projects/college_data/IPEDS_data/extraction/"
+ACCDB_DIR="/home/masoudmim/Documents/Projects/college-data/ipeds_college_data/ipeds_data/"
 ACCDB_FILES=("IPEDS200405" "IPEDS200506.accdb" "IPEDS200607.accdb" "IPEDS200708" "IPEDS200809.accdb" "IPEDS200910.accdb" "IPEDS201011" "IPEDS201112.accdb" "IPEDS201213.accdb" "IPEDS201314" "IPEDS201415.accdb" "IPEDS201516.accdb" "IPEDS201617" "IPEDS201718.accdb" "IPEDS201819.accdb" "IPEDS201920.accdb" "IPEDS202021.accdb" "IPEDS202122.accdb" "IPEDS202223.accdb") # Add your ACCDB file names here
 
 for accdb_file in "${ACCDB_FILES[@]}"; do
@@ -48,10 +48,22 @@ for accdb_file in "${ACCDB_FILES[@]}"; do
     table_name=$(basename "$file" .csv)
 
     # Read the first line of the CSV file to infer column names and types
-    columns_info=$(head -n 1 "$file" | awk -F',' '{for(i=1;i<=NF;++i) printf "column%d %s,", i, ($i ~ /^[0-9]+$/ ? "INT" : "VARCHAR(10)")}')
+    # columns_info=$(head -n 1 "$file" | awk -F',' '{for(i=1;i<=NF;++i) printf "column%d %s,", i, ($i ~ /^[0-9]+$/ ? "INT" : "VARCHAR(30)")}')
     
     # Remove trailing comma and spaces
-    columns_info=$(echo "$columns_info" | sed 's/,$//')
+    # columns_info=$(echo "$columns_info" | sed 's/,$//')
+
+    # Read the first line of the CSV file to get the actual column names
+    column_names=$(head -n 1 "$file" | tr ',' '\n')
+    
+    # Generate column information with actual column names and data types
+    columns_info=""
+    for column_name in $column_names; do
+      columns_info+="`echo $column_name | sed 's/[^a-zA-Z0-9]/_/g'` VARCHAR(255), "
+    done
+
+    # Remove trailing comma and spaces
+    columns_info=$(echo "$columns_info" | sed 's/,\s*$//')
 
     # Create table if not exists
     mysql -u "$MYSQL_USERNAME" -p"$MYSQL_PASSWORD" -e "CREATE TABLE IF NOT EXISTS $db_name.$table_name ($columns_info);"

@@ -25,26 +25,8 @@ df_var = pd.read_excel(excel_file, TABLE_NAME)
 df_dict = {}
 for table_name in df_var['TableName'].unique():
     df_dict[table_name] = df_var[df_var['TableName'] == table_name]
-    
-# # Convert NumPy arrays to Python lists in the DataFrame
-# df_var = df_var.apply(lambda x: x.tolist() if isinstance(x, np.ndarray) else x)
-
-# # Get column names and values
-# column_names = df_var.columns
-# column_values = {}
-# for column in column_names:
-#     column_values[column] = df_var[column].unique()
-
-# # Convert NumPy arrays in the dictionary to Python lists
-# for key, value in column_values.items():
-#     if isinstance(value, np.ndarray):
-#         column_values[key] = value.tolist()
-
-# # Create a JSON file from the dictionary and save it in the .ipeds_dcollege_data/config folder
-# # let's also make sure that the jason file is properly formatted such that each key-value pair
-# # is on a new line.
-# with open(CONFIG_FILE, 'w') as file:
-#     json.dump(column_values, file, indent=4)
+    # save each dataframe in a csv file
+    df_dict[table_name].to_csv(ROOT_DIR+'/config/'+table_name+'.csv', index=False)
 
 # let's read varName and varTitle from the excel file and creat a dictionary
 # with varName as key and varTitle as value
@@ -68,10 +50,6 @@ for index, row in df_tables.iterrows():
 # Create a JSON file from the dictionary and save it in the .ipeds_dcollege_data/config folder
 # let's also make sure that the jason file is properly formatted such that each key-value pair
 # is on a new line.
-TABLE_TITLE_FILE = ROOT_DIR+'/config/table_title.json'
-with open(TABLE_TITLE_FILE, 'w') as file:
-    json.dump(table_name_table_title, file, indent=4)
-
 TABLE_DESCRIPTION_FILE = ROOT_DIR+'/config/table_description.json'
 with open(TABLE_DESCRIPTION_FILE, 'w') as file:
     json.dump(table_name_table_description, file, indent=4)
