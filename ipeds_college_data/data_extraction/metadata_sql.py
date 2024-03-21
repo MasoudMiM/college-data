@@ -14,16 +14,17 @@ script_directory = os.path.dirname(os.path.realpath(__file__))
 ROOT_DIR = os.path.abspath(os.path.join(script_directory, '..'))
 
 # Reading Excel file into DataFrame
-EXCEL_FILE_PATH = ROOT_DIR+'/ipeds_data/IPEDS200405TablesDoc.xlsx'
+dataset = "IPEDS200708"
+EXCEL_FILE_PATH = f'{ROOT_DIR}/ipeds_data/{dataset}TablesDoc.xlsx'
 
 
-TABLE_NAME = 'Tables04'
+TABLE_NAME = 'Tables07'
 dic_tables = database.read_excel_to_dataframe(EXCEL_FILE_PATH, TABLE_NAME)
 table_name_description = {}
 for index, row in dic_tables.iterrows():
     table_name_description[row['TableName']] = row['Description']
 
-TABLE_NAME = 'vartable04'
+TABLE_NAME = 'varTable07'
 dic_var = database.read_excel_to_dataframe(EXCEL_FILE_PATH, TABLE_NAME)
 varName_varTitle, varName_varTable = {}, {}
 for index, row in dic_var.iterrows():
@@ -31,9 +32,19 @@ for index, row in dic_var.iterrows():
     varName_varTable[row['varName']] = row['TableName']
 
 # let's convert these into json files
-TABLE_DESC = ROOT_DIR+'/data_extraction/data/table_description.json'
-VAR_DESC = ROOT_DIR+'/data_extraction/data/var_description.json'
-VAR_TABLE= ROOT_DIR+'/data_extraction/data/var_table.json'
+TABLE_DESC = f'{ROOT_DIR}/data_extraction/data/data_{dataset}/table_description.json'
+VAR_DESC = f'{ROOT_DIR}/data_extraction/data/data_{dataset}/var_description.json'
+VAR_TABLE= f'{ROOT_DIR}/data_extraction/data/data_{dataset}/var_table.json'
+# create the directory if it does not exist - using a for loop to avoid errors
+for file in [TABLE_DESC, VAR_DESC, VAR_TABLE]:
+    if not os.path.exists(os.path.dirname(file)):
+        try:
+            os.makedirs(os.path.dirname(file))
+        except OSError as exc: # Guard against
+            raise exc
+
+# write the json files
+
 with open(TABLE_DESC, 'w') as file:
     json.dump(table_name_description, file, indent=4)
 with open(VAR_DESC, 'w') as file:
@@ -46,17 +57,29 @@ config_file_path = "ipeds_college_data/config/connection.config"  # Path to your
 db_connection = database.DatabaseConnection(config_file_path)
 db_connection.connect()
 
-# Example: Get values for a set of variables for a given institution
-institution_name = '"LAMSON COLLEGE"'
-variable_set = {"F1AF18", "F3B01"}  # Set of variables you want to retrieve
-variable_description = {var: db_connection.get_var_description(var) for var in variable_set}
-print(variable_description)
-result = db_connection.get_values_for_institution(institution_name, variable_set, varName_varTable)
 
-for count, value in enumerate(variable_set):
-    print(f"Value for {variable_description[value]} ({value}) for institution {institution_name}: {result[value]}")
+# Example: Get values for a set of variables for a given institution
+institution_name = '"Stony Brook University"'
+# Set of variables you want to retrieve
+variable_set_1 = {"GBA4RTT", "GBA5RTT", "GBA6RTT", "GBA6RTM", "GBA6RTW"}
+variable_set_2 = {"F1AF18", "F1AG01", "F1AG02", "F1AG03", "F1AG04", "F1AG05", "F1AG06"}
+
+variable_description = {var: db_connection.get_var_description(var, VAR_DESC) for var in variable_set_2}
+# print(variable_description)
+result = db_connection.get_values_for_institution(institution_name, variable_set_2, varName_varTable)
+
+for count, value in enumerate(variable_set_2):
+    if result is not None:
+        for value in result:
+            if result[value] is not None:
+                print(f"Value for {variable_description[value]} ({value}) for institution {institution_name}: {result[value]}")
+            else:
+                print(f"Value for {variable_description[value]} ({value}) for institution {institution_name}: No data available")
+    else:
+        print(f"Value for {variable_description[value]} ({value}) for institution {institution_name}: No data available")
 
 # ------ tution information
+
 # "chg1py1": "Published tuition and fees 2002-03",
 # "chg1py2": "Published tuition and fees 2003-04",
 
@@ -76,7 +99,7 @@ for count, value in enumerate(variable_set):
 
 
 
-# ------ finanice information
+# ------ finanice information}
 # "F2E106": "Independent operations-Interest",
 # "F2E107": "Independent operations-All other",
 # "F2E111": "Operation and maintenance of plant-Total amount",
@@ -123,6 +146,7 @@ for count, value in enumerate(variable_set):
 # "F3B02": "Total expenses ",
 
 
+
 # ------ salary information
 # "SALTOTL": "Average salary equated to 9-month contracts of full-time instructional faculty - all ranks",
 # "SalProf": "Average salary equated to 9-month contracts of full-time instructional faculty - professors",
@@ -131,7 +155,6 @@ for count, value in enumerate(variable_set):
 # "SalInst": "Average salary equated to 9-month contracts of full-time instructional faculty - instructors ",
 # "Sallect": "Average salary equated to 9-month contracts of full-time instructional faculty - lecturers",
 # "SALNRNK": "Average salary equated to 9-month contracts of full-time instructional faculty - No academic rank",
-
 
 # ------ assets information
 # "F2A01": "Long-term investments",

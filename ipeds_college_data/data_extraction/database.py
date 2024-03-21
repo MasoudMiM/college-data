@@ -1,5 +1,6 @@
 import mysql.connector
 import pandas as pd
+import json
 
 def read_excel_to_dataframe(excel_file_path, table_name):
     try:
@@ -65,14 +66,12 @@ class DatabaseConnection:
         else:
             return None
     
-    def get_var_description(self, var_name):
-        query = f"SELECT varTitle FROM vartable04 WHERE varName = '\"{var_name}\"'"
-        # print(query)
-        rows = self.execute_query(query)
-        if rows:
-            return rows[0][0]
-        else:
-            return None
+    def get_var_description(self, var_name, VAR_DESC):
+        with open(VAR_DESC, 'r') as file:
+            var_description = json.load(file)
+        return var_description[var_name]
+    
+
         
     def get_values_for_institution(self, institution_name, variable_set, var_table_dict):
         try:
@@ -103,8 +102,9 @@ class DatabaseConnection:
             variable_values = {}
             for variable in variable_set:
                 table = var_table_dict[variable]
-                print(table, variable, unitid[0])
+                # print(table, variable, unitid[0])
                 query = f"SELECT {variable} FROM {table} WHERE {unitid_variable} = %s LIMIT 1"
+                # print(query)
                 cursor.execute(query, (unitid[0],))
                 value = cursor.fetchone()
                 variable_values[variable] = value[0] if value else None
