@@ -11,7 +11,7 @@ exec 2> >(tee -a "$WARNING_LOG" >/dev/null)
 
 MYSQL_USERNAME="root"
 MYSQL_PASSWORD="password"
-ACCDB_DIR="/home/masoudmim/Documents/Projects/college-data/ipeds_college_data/ipeds_data/"
+ACCDB_DIR="/home/masoudmim/Documents/Projects/college-data/ipeds_college_data/ipeds_data/accdb_files/"
 ACCDB_FILES=("IPEDS200405" "IPEDS200506.accdb" "IPEDS200607.accdb" "IPEDS200708" "IPEDS200809.accdb" "IPEDS200910.accdb" "IPEDS201011" "IPEDS201112.accdb" "IPEDS201213.accdb" "IPEDS201314" "IPEDS201415.accdb" "IPEDS201516.accdb" "IPEDS201617" "IPEDS201718.accdb" "IPEDS201819.accdb" "IPEDS201920.accdb" "IPEDS202021.accdb" "IPEDS202122.accdb" "IPEDS202223.accdb") # Add your ACCDB file names here
 
 for accdb_file in "${ACCDB_FILES[@]}"; do
@@ -42,6 +42,10 @@ for accdb_file in "${ACCDB_FILES[@]}"; do
   printf 'creating database...\n'
   mysql -u "$MYSQL_USERNAME" -p"$MYSQL_PASSWORD" -e "CREATE DATABASE IF NOT EXISTS $db_name;"
 
+  # Pause for 10 seconds
+  printf 'pausing for 10 seconds...\n'
+  sleep 10s
+  
   # Step 4: Import CSV files into MySQL with dynamic table creation
   printf 'importing the csv files into MySQL ...\n'
   for file in "$OUTPUT_DIR"/*.csv; do
@@ -59,7 +63,7 @@ for accdb_file in "${ACCDB_FILES[@]}"; do
     # Generate column information with actual column names and data types
     columns_info=""
     for column_name in $column_names; do
-      columns_info+="`echo $column_name | sed 's/[^a-zA-Z0-9]/_/g'` VARCHAR(255), "
+      columns_info+="`echo $column_name | sed 's/[^a-zA-Z0-9]/_/g'` TEXT, "
     done
 
     # Remove trailing comma and spaces

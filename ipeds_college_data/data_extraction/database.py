@@ -71,27 +71,38 @@ class DatabaseConnection:
             var_description = json.load(file)
         return var_description[var_name]
     
-
+    def get_var_table(self, var_name, VAR_TABLE):
+        with open(VAR_TABLE, 'r') as file:
+            var_table = json.load(file)
+        return var_table[var_name]
+    
+    def get_inst_unitid(self, inst_table):
+        with open(inst_table, 'r') as file:
+            inst_table = json.load(file)
+        return inst_table["INSTNM"]
         
-    def get_values_for_institution(self, institution_name, variable_set, var_table_dict):
+    def get_values_for_institution(self, institution_name, variable_set, var_table, inst_table):
         try:
             cursor = self.connection.cursor()
 
             # Check if the institution_name exists in the specified column
-            institution_query = f"SELECT COUNT(*) FROM {var_table_dict['INSTNM']} WHERE INSTNM = %s"
-            cursor.execute(institution_query, (institution_name,))
+            # print(inst_table)
+            institution_query = f"SELECT COUNT(*) FROM {inst_table} WHERE INSTNM = '{institution_name}'"
+            # print(institution_query)
+            cursor.execute(institution_query)
             institution_count = cursor.fetchone()[0]
 
             if institution_count == 0:
-                print(f"Institution '{institution_name}' not found in the '{var_table_dict['INSTNM']}' table.")
+                print(f"Institution '{institution_name}' not found in the '{inst_table}' table.")
                 return None
 
             # Get the variable corresponding to UNITID (assuming it's always named "UNITID")
             unitid_variable = "UNITID"
 
             # Build the SQL query to get UNITID for the given institution_name
-            unitid_query = f"SELECT {unitid_variable} FROM {var_table_dict['INSTNM']} WHERE INSTNM = %s LIMIT 1"
-            cursor.execute(unitid_query, (institution_name,))
+            unitid_query = f"SELECT {unitid_variable} FROM {inst_table} WHERE INSTNM = '{institution_name}' LIMIT 1"
+            # print(unitid_query)
+            cursor.execute(unitid_query)
             unitid = cursor.fetchone()
 
             if not unitid:
@@ -100,28 +111,21 @@ class DatabaseConnection:
 
             # Build the SQL query to get values for the given variables using UNITID
             variable_values = {}
-            for variable in variable_set:
-                table = var_table_dict[variable]
-                # print(table, variable, unitid[0])
-                query = f"SELECT {variable} FROM {table} WHERE {unitid_variable} = %s LIMIT 1"
-                # print(query)
-                cursor.execute(query, (unitid[0],))
-                value = cursor.fetchone()
-                variable_values[variable] = value[0] if value else None
+            # print(variable_set)
+            # for variable in variable_set:
+            table = var_table
+            query = f"SELECT '{variable_set}' FROM {table} WHERE {unitid_variable} = %s LIMIT 1"
+            # print(query)  # For debugging purposes
+            cursor.execute(query, (unitid[0],))
+            value = cursor.fetchone()
+            variable_values[variable_set] = value[0] if value else None
 
             return variable_values
+
 
         except mysql.connector.Error as e:
             print(f"Error: {e}")
             return None
         finally:
             cursor.close()
-
-    # TODO: let's add a method to get the column names and unique values in the column
-    # of a table named table_name+suffix where suffix is the 8th and 9th letter name of the database.
-    # I temporarily added an example of how this could be done in metadata.py file.
-    # It needs to be converted to a method in the class DatabaseConnection.
-    # However, that approach uses the excel file. But I want to use the metadata
-    # from the database itself, which are stored in the last three tables.
-
 
